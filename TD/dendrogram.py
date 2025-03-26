@@ -61,17 +61,18 @@ class Dendrogram:
         """Find the representative in the union-find structure
         for the cluster containing node i.
         """
-        assert 0 <= i < self.g.node_count()
-        result = i
-        # TODO: Exercise 4
-        pass
-        return result
+        assert 0 <= i < self.g.node_count() #On s'assure que l'indice est valide
+        if self.parent[i] == -1:
+            return i
+        return self.find_rep(self.parent[i])
 
     def merge(self, e: Edge):
         """Merge the clusters connected by the edge."""
         # TODO: Exercise 8
         # Plan:
         # 1. Find the representatives
+        rp_1 = self.find_rep(e.p1.name)
+        rp_2 = e.p2
         # 2. Choose the highest
         # 3. Adjust parent, left, and down
         # 4. Update ranks

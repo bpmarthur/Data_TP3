@@ -22,7 +22,14 @@ class Edge:
         return f"Edge: {self.p1} -> {self.p2} (length {self.length})"
 
     # TODO: Exercise 3
-    pass
+    def __lt__(self, other):
+        '''
+        Again, since __lt__ is a “dunder” (double-underscore) method, you should never call it directly: it exists so that Python can apply the < comparison operator to Edge objects, and therefore sort collections of Edges.
+        These < comparisons are translated directly into implicit calls to __lt__ (for example, e_1 < e_3 is translated to e_1.__lt__(e_3)).
+        '''
+        return self.length < other.length
+    
+
 
 
 class Graph:
@@ -34,6 +41,8 @@ class Graph:
     ----------
     edges : [Edge]
     node_names : [str]
+
+    Il faut ici voir node_names[i] comme le nom du point i dans le Cloud associé.
     """
 
     def __init__(self):
@@ -79,14 +88,15 @@ class Graph:
     def add_nodes(self, ns: [str]) -> None:
         """Add a list of (names of) nodes to the graph."""
         # TODO: Exercise 4
-        pass
+        self.node_names.extend(ns)
 
     def add_edges(self, es: [Edge]) -> None:
         """Add a list of edges to the graph,
         maintaining the length-sorted invariant.
         """
         # TODO: Exercise 4
-        pass
+        self.edges.extend(es)
+        self.edges.sort()
 
 
 def graph_from_cloud(c: Cloud):
@@ -96,7 +106,14 @@ def graph_from_cloud(c: Cloud):
     """
     res = Graph()
     # TODO: Exercise 5
-    pass
+    for i in range(len(c)):
+        for j in range(i):
+            p1 = c[i]
+            p2 = c[j]
+            length = p1.dist(p2)
+            e = Edge(i, j, length)
+            res.add_edges([e])
+        res.add_nodes([c[i].name])
     return res
 
 
@@ -107,9 +124,15 @@ def graph_from_matrix(node_names: [str], dist_matrix: [[float]]):
     """
     res = Graph()
     # TODO: Exercise 6
-    pass
+    for i in range(len(node_names)):
+        for j in range(i):
+            p1 = node_names[i]
+            p2 = node_names[j]
+            length = dist_matrix[i][j]
+            e = Edge(i, j, length)
+            res.add_edges([e])
+        res.add_nodes([node_names[i]])
     return res
-
 
 def graph_from_matrix_file(filename):
     """Construct the graph specified in the named file.  The first line
@@ -118,5 +141,13 @@ def graph_from_matrix_file(filename):
     (n entries per line, comma-separated).
     """
     # TODO: Exercise 6
-    pass
+    node_names = []
+    dist_matrix = []
+    with open(filename, 'r') as f:
+        n = int(f.readline())
+        for _ in range(n):
+            node_names.append(f.readline().strip())
+        for _ in range(n):
+            dist_matrix.append([float(x) for x in f.readline().strip().split(',')])
+    return graph_from_matrix(node_names, dist_matrix)
 

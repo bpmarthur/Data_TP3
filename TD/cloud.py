@@ -15,7 +15,7 @@ class Point:
         name: str = ''
     """
 
-    def __init__(self, coords : [float], name=''):
+    def __init__(self, coords : list[float], name=''):  #A priori Python privilégie l'utilisation de list[type] plutot que [type] (type[] en Java)
         self.coords = np.array(coords)
         self.name = name
 
@@ -52,9 +52,16 @@ class Cloud:
         return len(self._points)
 
     def __iter__(self):
+        '''
+        the __iter__ method returns an iterator (created by the built-in iter function) over the internal list of points. This allows us to iterate directly over the points in the cloud.
+        for p in c:
+        for (i, p_i) in enumerate(c):
+        sont désormais possibles
+        '''
         return iter(self._points)
 
     def __getitem__(self, i : int):
+        '''This allows objects to support indexing (e.g., obj[index])'''
         return self._points[i]
 
     def add_point(self, p : Point) -> None:
