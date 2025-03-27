@@ -189,13 +189,22 @@ class Dendrogram:
             return 0
         elif self.cluster[cluster] == cluster:
             fils = self.down[cluster]
+            while fils != -1:
+                if self.cluster[fils] == cluster:
+                    return self.height[fils]
+                fils = self.left[fils]
+        return 0  # Unreachable!
+        '''
+        #Version 2, qui marche avec le fils du même cluster de hauteur max
+        elif self.cluster[cluster] == cluster:
+            fils = self.down[cluster]
             max_h = 0
             while fils != -1:
                 if self.cluster[fils] == cluster and self.height[fils] > max_h:
                     max_h = self.height[fils]
                 fils = self.left[fils]
             return max_h
-        return 0  # Unreachable!
+        '''
 
     # /*** GETTERS ***/
     def get_name(self, i: int) -> str:
