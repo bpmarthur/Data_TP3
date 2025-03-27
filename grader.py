@@ -226,6 +226,8 @@ class Grader(unittest.TestCase):
         def gch_test(height, refs):
             d = make_example()
             d.set_clusters(height)
+            #for i in range(5):
+            #    print(f"[MOI] i = {i}, {d.get_cluster_height(i)}")
             for i in range(5):
                 self.assertAlmostEqual(d.get_cluster_height(i), refs[i],
                                     msg=f"Example with cut height = {height}")

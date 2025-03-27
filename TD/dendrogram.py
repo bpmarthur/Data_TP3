@@ -3,7 +3,7 @@ A basic dendrogram for single-linkage hierarchical clustering.
 """
 
 from TD.graph import Graph, Edge
-
+import numpy as np
 
 class Dendrogram:
     """
@@ -71,20 +71,43 @@ class Dendrogram:
         # TODO: Exercise 8
         # Plan:
         # 1. Find the representatives
-        rp_1 = self.find_rep(e.p1.name)
-        rp_2 = e.p2
+        rp_1 = self.find_rep(e.p1) #Est ce qu'il faut plutôt prendre la valeur de e.p1.name ?
+        rp_2 = self.find_rep(e.p2)
         # 2. Choose the highest
+        pere, fils = 0,0
+        if self.rank[rp_1] >= self.rank[rp_2]:  #Le inférieur ou égal est crucial
+            pere, fils = rp_1, rp_2
+        else:    
+            pere, fils = rp_2, rp_1
+        
         # 3. Adjust parent, left, and down
+        self.parent[fils] = pere
+        self.left[fils] = self.down[pere]
+        self.down[pere] = fils
+
         # 4. Update ranks
+        if self.rank[pere] == self.rank[fils]:
+            self.rank[pere] += 1
         # 5. Update heights
-        pass
+        self.height[fils] = e.length/2    #Maybe we need to divide by 2
 
     def build(self):
         """Merge along each edge in non-decreasing length order
         to build the dendrogram.
         """
         # TODO: Exercise 9
-        pass
+        self.g.edges.sort() #tri des arètes
+        i = 0
+        for e in self.g.edges: 
+            if self.find_rep(e.p1) != self.find_rep(e.p2):
+                #On merge les représentants des clusters
+                self.merge(e)
+                i += 1
+                #On merge les clusters
+            if i == self.get_n() - 1:
+                break
+
+
 
     def find_heights(self, eps: float):
         """Put all heights <= eps into list of significant heights."""
@@ -103,8 +126,22 @@ class Dendrogram:
     def _set_clusters(self, i: int, h: float):
         assert 0 <= i < self.get_n()
         # TODO: Exercise 10
-        pass
-
+        
+        #If it's the root
+        if self.parent[i] == -1:
+            self.cluster[i] = i
+            self.total_clusters += 1
+        elif self.height[i] > h:
+            self.cluster[i] = i
+            self.total_clusters += 1
+        else:
+            self.cluster[i] = self.cluster[self.parent[i]]
+            
+        if self.left[i] != -1:
+            self._set_clusters(self.left[i], h)
+        if self.down[i] != -1:
+            self._set_clusters(self.down[i], h)
+    
     def set_clusters(self, h: float):
         """(Re)set clusters with cut height h."""
         if self.cut_height is h:
@@ -116,7 +153,13 @@ class Dendrogram:
         """Count non-singleton clusters from scratch"""
         count = 0
         # TODO: Exercise 11
-        pass
+        tab = np.zeros(self.get_n())
+        for i in range(self.get_n()):
+            tab[self.cluster[i]] += 1
+        for i in range(self.get_n()):
+            if tab[i] > 1:
+                count += 1
+
         return count
 
     def count_ns_clusters(self) -> int:
@@ -140,12 +183,21 @@ class Dendrogram:
         """
         assert 0 <= cluster < self.get_n()
         # TODO: Exercise 12
-        pass
-
+        if self.cluster[cluster] == cluster and self.down[cluster] == -1:   #une feuille
+            return 0
+        elif self.cluster[cluster] != cluster: #C'est pas le représentant
+            return 0
+        elif self.cluster[cluster] == cluster:
+            fils = self.down[cluster]
+            max_h = 0
+            while fils != -1:
+                if self.cluster[fils] == cluster and self.height[fils] > max_h:
+                    max_h = self.height[fils]
+                fils = self.left[fils]
+            return max_h
         return 0  # Unreachable!
 
     # /*** GETTERS ***/
-
     def get_name(self, i: int) -> str:
         """The name of the i-th node in the underlying graph."""
         assert 0 <= i < self.get_n()
